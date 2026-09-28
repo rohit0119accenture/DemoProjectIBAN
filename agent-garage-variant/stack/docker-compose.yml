@@ -1,0 +1,159 @@
+# Demo 02 — IBAN Validation — Agent Garage (n8n) variant
+#
+# Minimal stack: PostgreSQL (n8n backend), n8n (workflow engine), Open WebUI (chat).
+# Adapted from https://github.com/AccentureCodeFoundry/i-agent-garage (full stack
+# includes Ollama, LiteLLM, Jira, Plane, Qdrant). For this demo, the n8n workflow
+# calls Anthropic Claude directly, so neither LiteLLM nor Ollama is required.
+#
+# Bring up:
+#   cp .env.example .env       # then fill in secrets
+#   docker compose up -d
+#
+# First-run flow:
+#   1. wait for n8n + openwebui to be healthy
+#   2. open http://localhost:5678  → set up GitHub + Anthropic credentials,
+#      then re-run `docker compose up -d n8n-import` to reload the workflow
+#   3. open http://localhost:3000  → login admin@test.com / admin123
+#                                  → confirm the User Story Assistant pipe is active
+#   4. start a new chat with model "User Story Assistant"
+
+volumes:
+  n8n_storage:
+  postgres_storage:
+  openwebui_storage:
+
+networks:
+  demo:
+
+x-n8n: &service-n8n
+  image: n8nio/n8n:latest
+  networks: ['demo']
+  environment:
+    - DB_TYPE=postgresdb
+    - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_USER=${POSTGRES_USER}
+    - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+    - N8N_DIAGNOSTICS_ENABLED=false
+    - N8N_PERSONALIZATION_ENABLED=false
+    - N8N_ENCRYPTION_KEY
+    - N8N_USER_MANAGEMENT_JWT_SECRET
+    - WEBHOOK_URL=http://n8n:5678
+    - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+    - N8N_LOG_LEVEL=info
+    - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+    - N8N_SECURE_COOKIE=false
+    # Anthropic key — picked up by the Anthropic credential in n8n
+    - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+  env_file:
+    - .env
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    hostname: postgres
+    networks: ['demo']
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  n8n-import:
+    <<: *service-n8n
+    hostname: n8n-import
+    container_name: n8n-import
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "n8n import:credentials --separate --input=/backup/credentials 2>/dev/null || true; n8n import:workflow --separate --input=/backup/workflows"
+    volumes:
+      - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  n8n:
+    <<: *service-n8n
+    hostname: n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - 5678:5678
+    volumes:
+      - n8n_storage:/home/node/.n8n
+      - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+      n8n-import:
+        condition: service_completed_successfully
+
+  openwebui-import:
+    image: alpine:3.18
+    container_name: openwebui-import
+    networks: ['demo']
+    volumes:
+      - openwebui_storage:/app/backend/data
+      - ./openwebui:/init-data:ro
+    command: [
+      "/bin/sh", "-c",
+      "if [ -f /init-data/webui.db ] && [ ! -f /app/backend/data/webui.db ]; then \
+         echo 'Copying webui.db into volume…'; \
+         cp /init-data/webui.db /app/backend/data/webui.db; \
+       else \
+         echo 'webui.db already initialised or no seed db.'; \
+       fi"
+    ]
+    restart: "no"
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    hostname: openwebui
+    networks: ['demo']
+    restart: unless-stopped
+    environment:
+      - RESET_CONFIG_ON_START=false
+      - ENABLE_OLLAMA_API=false
+      # Anthropic-direct: OpenWebUI talks to n8n only (via the user_story_assistant pipe);
+      # the chat-model lookup never reaches an LLM provider, so a dummy key is fine.
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-dummy-not-used}
+    ports:
+      - 3000:8080
+    volumes:
+      - openwebui_storage:/app/backend/data
+    depends_on:
+      openwebui-import:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  openwebui-functions-import:
+    image: python:3.11-slim
+    container_name: openwebui-functions-import
+    networks: ['demo']
+    restart: "no"
+    volumes:
+      - ./openwebui/functions:/functions:ro
+      - ./openwebui/import_functions.py:/import_functions.py:ro
+    command: ["python3", "/import_functions.py"]
+    environment:
+      - OWUI_URL=http://openwebui:8080
+      - OWUI_ADMIN_EMAIL=${OWUI_ADMIN_EMAIL:-admin@test.com}
+      - OWUI_ADMIN_PASSWORD=${OWUI_ADMIN_PASSWORD:-admin123}
+      - N8N_WEBHOOK_PATH=${N8N_WEBHOOK_PATH:-880e3fd7-2418-4344-80e0-91f8305cab86}
+    depends_on:
+      openwebui:
+        condition: service_healthy

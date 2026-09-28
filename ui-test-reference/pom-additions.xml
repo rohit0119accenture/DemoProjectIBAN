@@ -1,0 +1,28 @@
+<!--
+  POM additions required for the Phase 3 Selenium E2E suite.
+  Merge these snippets into bank-transfer-app/pom.xml after the developer agent
+  has finished Phase 2 (and the IBAN validation backend + frontend are in place).
+-->
+
+<!-- in <properties> -->
+<selenium.version>4.27.0</selenium.version>
+
+<!-- in <dependencies> -->
+<dependency>
+    <groupId>org.seleniumhq.selenium</groupId>
+    <artifactId>selenium-java</artifactId>
+    <scope>test</scope>
+</dependency>
+
+<!-- in <build><plugins>, replace existing maven-surefire-plugin config with: -->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <includes>
+            <include>**/*Test.java</include>
+            <include>**/*IT.java</include>
+            <include>**/*E2E.java</include>
+        </includes>
+    </configuration>
+</plugin>

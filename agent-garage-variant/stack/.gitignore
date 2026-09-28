@@ -1,0 +1,11 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Exported n8n credentials are encrypted, but the encryption key lives in
+# .env above, so treat them as secret too.
+n8n/backup/credentials/*.json
+
+# OpenWebUI seed db — may contain prior chat history / user accounts
+openwebui/webui.db

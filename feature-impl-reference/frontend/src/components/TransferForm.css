@@ -1,0 +1,436 @@
+/* ═══════════════════════════════════════════════════
+   SEPA Transfer Form — Demo Bank Professional UI
+   ═══════════════════════════════════════════════════ */
+
+.transfer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Sections ── */
+.form-section {
+  background: var(--bank-white);
+  border: 1px solid var(--bank-gray-200);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: sectionIn 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: box-shadow var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+.form-section:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.form-section:focus-within {
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--bank-gray-100);
+}
+
+.form-section-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--bank-blue-light);
+  color: var(--bank-blue);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.form-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--bank-gray-800);
+  letter-spacing: -0.01em;
+}
+
+/* ── Fields ── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--bank-gray-400);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: color var(--transition-fast);
+}
+
+.form-label--active {
+  color: var(--bank-blue);
+}
+
+.form-input {
+  padding: 12px 14px;
+  border: 1.5px solid var(--bank-gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--bank-gray-800);
+  background: var(--bank-white);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-input::placeholder {
+  color: var(--bank-gray-200);
+  font-weight: 400;
+}
+
+.form-input:hover {
+  border-color: var(--bank-gray-400);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--bank-blue);
+  box-shadow: var(--shadow-input-focus);
+  background: var(--bank-white);
+}
+
+.form-input--mono {
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-input--textarea {
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.5;
+}
+
+/* ── Amount row ── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+}
+
+.form-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 56px;
+}
+
+.form-input-suffix {
+  position: absolute;
+  right: 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bank-gray-400);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.form-input--amount {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-static-value {
+  padding: 12px 14px;
+  border: 1.5px solid var(--bank-gray-100);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  color: var(--bank-gray-600);
+  background: var(--bank-gray-50);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── IBAN input + adornments ── */
+.iban-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.iban-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.form-input--valid {
+  border-color: var(--bank-success);
+}
+
+.form-input--valid:focus {
+  border-color: var(--bank-success);
+  box-shadow: 0 0 0 3px rgba(10, 138, 80, 0.12);
+}
+
+.form-input--invalid {
+  border-color: var(--bank-error);
+}
+
+.form-input--invalid:focus {
+  border-color: var(--bank-error);
+  box-shadow: 0 0 0 3px rgba(196, 49, 75, 0.12);
+}
+
+.iban-status-icon {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.iban-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--bank-gray-200);
+  border-top-color: var(--bank-blue);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+/* ── Validation status line (#iban-validation-status) ── */
+#iban-validation-status {
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.iban-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.2;
+  /* No opacity-fade animation here: chromedriver reports opacity:0 as
+     not-displayed during the fade, which breaks Selenium's isDisplayed()
+     assertion when the wait fires on the first paint. */
+}
+
+.iban-status--loading {
+  color: var(--bank-gray-600);
+  background: var(--bank-gray-50);
+  border: 1px solid var(--bank-gray-100);
+}
+
+.iban-status--valid {
+  color: var(--bank-success);
+  background: var(--bank-success-bg);
+  border: 1px solid rgba(10, 138, 80, 0.15);
+}
+
+.iban-status--error {
+  color: var(--bank-error);
+  background: var(--bank-error-bg);
+  border: 1px solid rgba(196, 49, 75, 0.15);
+}
+
+.iban-status--warning {
+  color: #92660a;
+  background: #fffbeb;
+  border: 1px solid rgba(180, 120, 0, 0.2);
+}
+
+/* ── Bank details panel (shown for valid IBANs) ── */
+.bank-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bank-success-bg);
+  border: 1px solid rgba(10, 138, 80, 0.15);
+  border-radius: var(--radius-sm);
+}
+
+.bank-details-item {
+  font-size: 0.8rem;
+  color: var(--bank-success);
+}
+
+.bank-details-item--name {
+  font-weight: 600;
+}
+
+.bank-details-item--bic {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+/* ── Field hints ── */
+.form-field-hint {
+  display: flex;
+  justify-content: flex-end;
+  min-height: 18px;
+}
+
+.form-field-hint span,
+.iban-counter {
+  font-size: 0.72rem;
+  color: var(--bank-gray-400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Actions ── */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 4px;
+  animation: sectionIn 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn--primary {
+  flex: 1;
+  background: linear-gradient(180deg, #3b82f6 0%, var(--bank-blue) 100%);
+  color: var(--bank-white);
+  box-shadow:
+    0 1px 2px rgba(37, 99, 235, 0.2),
+    0 4px 12px rgba(37, 99, 235, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #4f8ff7 0%, #1d4ed8 100%);
+}
+
+.btn--primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn--loading {
+  pointer-events: none;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--bank-white);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.btn--ghost {
+  padding: 14px 24px;
+  background: transparent;
+  color: var(--bank-gray-600);
+  border: 1.5px solid var(--bank-gray-200);
+  border-radius: var(--radius-md);
+}
+
+.btn--ghost:hover {
+  background: var(--bank-gray-50);
+  border-color: var(--bank-gray-400);
+  color: var(--bank-gray-800);
+}
+
+/* ── Success Banner ── */
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--bank-success-bg);
+  color: var(--bank-success);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 500;
+  border: 1px solid rgba(10, 138, 80, 0.15);
+  animation: bannerIn 400ms var(--transition-spring) both;
+}
+
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.success-banner svg { flex-shrink: 0; }
+
+/* ── Footer ── */
+.form-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--bank-gray-100);
+  margin-top: 4px;
+}
+
+.form-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--bank-gray-400);
+  font-weight: 400;
+}
+
+.form-footer-item svg { flex-shrink: 0; opacity: 0.6; }
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+  .form-section { padding: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-actions { flex-direction: column; }
+  .form-footer { flex-direction: column; gap: 12px; }
+}
